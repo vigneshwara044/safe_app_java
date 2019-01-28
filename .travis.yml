@@ -54,5 +54,7 @@ script:
   - chmod +x gradlew
   - ./gradlew download-nativelibs
   - ./gradlew check
+  - cd safe-app/build/reports/jacoco/test
+  - touch jacocoTestReport.xml
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./gradlew :safe-app-android:runInstrumentationTests; fi
 
