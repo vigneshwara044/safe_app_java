@@ -56,6 +56,6 @@ script:
   - ./gradlew check
   - cd safe-app/build/reports/jacoco/test
   - touch jacocoTestReport.xml
-  - cd ..
+  - cd 
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./gradlew :safe-app-android:runInstrumentationTests; fi
 
