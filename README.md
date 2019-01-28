@@ -6,9 +6,9 @@ safe_app_java is a Java wrapper for the [safe_app](https://github.com/maidsafe/s
 
 **Maintainer:** Krishna Kumar (krishna.kumar@maidsafe.net)
 
-|Android|
-|:-:|
-|[![Build Status](https://travis-ci.com/maidsafe/safe_app_java.svg?branch=master)](https://travis-ci.com/maidsafe/safe_app_java)|
+|Android|Coverage Status|
+|:---:|:---:|
+|[![Build Status](https://travis-ci.com/maidsafe/safe_app_java.svg?branch=master)](https://travis-ci.com/maidsafe/safe_app_java)|[![Coverage Status](https://coveralls.io/repos/github/maidsafe/safe_app_java/badge.svg?branch=master)](https://coveralls.io/github/maidsafe/safe_app_java?branch=master)|
 
 
 ## API Documentation
