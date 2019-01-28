@@ -35,7 +35,7 @@ jacoco {
 }
 jacocoTestReport {
   reports {
-    xml.enabled false
+    xml.enabled true
     csv.enabled false
     html.destination file("${buildDir}/jacocoHtml")
   }
@@ -43,7 +43,7 @@ jacocoTestReport {
   additionalClassDirs = files("${rootDir}/api/build/classes/java/main")
 }
 
-
+check.dependsOn jacocoTestReport
 
 group 'net.maidsafe'
 version '0.1.0'
