@@ -44,7 +44,7 @@ jacocoTestReport {
   additionalClassDirs = files("${rootDir}/api/build/classes/java/main")
 }
 
-check.dependsOn jacocoTestReport
+//check.dependsOn jacocoTestReport
 
 coveralls {
     jacocoReportPath 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
