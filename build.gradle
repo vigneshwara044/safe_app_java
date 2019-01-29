@@ -39,5 +39,5 @@ coveralls {
 }
 
 tasks.coveralls {
-    dependsOn 'jacocoTestReport'
+    dependsOn ':safe-app:jacocoTestReport'
 }
