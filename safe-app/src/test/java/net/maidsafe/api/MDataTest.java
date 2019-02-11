@@ -262,50 +262,37 @@ public class MDataTest {
         session.mData.setUserPermission(appPublicSignKey,mDataInfo,newPermissionSet,
                 session.mData.getVersion(mDataInfo).get()+1).get();
 
-        // inserting the permissionSet locally but not on the network.
-        //session.mDataPermission.insert(newpermissionHandle, appPublicSignKey,newPermissionSet).get();
 
-        // create a action handle to insert the second entry of the mData
         NativeHandle actionHandle = session.mDataEntryAction.newEntryAction().get();
-//        key = session.mData.encryptEntryKey(mDataInfo, "SAFERocks-key2".getBytes()).get();
-//        value = session.mData.encryptEntryValue(mDataInfo, "someValue2".getBytes()).get();
 
-        // inserting 'locally'
-        //session.mDataEntryAction.insert(actionHandle, key, value).get();
-
-        // 'put'ing onto the network
-//        session.mData.mutateEntries(mDataInfo, newpermissionHandle).get();
 
         permissionHandle = session.mData.getPermission(mDataInfo).get();
         long noOfPermissions = session.mDataPermission.getLength(permissionHandle).get();
 
-        System.out.println(noOfPermissions);
+        //System.out.println(noOfPermissions);
+        Assert.assertEquals(noOfPermissions,2);
 
-        PermissionSet checkPermissionSet = session.mDataPermission.getPermissionForUser(permissionHandle
-                ,appPublicSignKey).get();
+        PermissionSet checkPermissionSet = session.mDataPermission.
+                getPermissionForUser(permissionHandle,appPublicSignKey).get();
 
         System.out.println(checkPermissionSet.toString());
 
-//        PermissionSet truePermissionSet = new PermissionSet();
-//        truePermissionSet.setInsert(true);
-//        truePermissionSet.setUpdate(true);
-//        truePermissionSet.setRead(true);
-//        truePermissionSet.setDelete(false);
-//        truePermissionSet.setManagePermission(true);
-//
-//        PermissionSet falsePermissionSet = new PermissionSet();
-//        falsePermissionSet.setInsert(true);
-//        falsePermissionSet.setUpdate(true);
-//        falsePermissionSet.setRead(true);
-//        falsePermissionSet.setDelete(true);
-//        falsePermissionSet.setManagePermission(true);
+
 
         Assert.assertEquals(checkPermissionSet.getRead(),true);
-        //Assert.assertNotEquals(checkPermissionSet,falsePermissionSet);
+        Assert.assertEquals(checkPermissionSet.getInsert(),true);
+        Assert.assertEquals(checkPermissionSet.getUpdate(),true);
+        Assert.assertEquals(checkPermissionSet.getDelete(),false);
+        Assert.assertEquals(checkPermissionSet.getManagePermission(),true);
 
 
 
         List<UserPermissionSet> userPermissionSet = session.mDataPermission.listAll(permissionHandle).get();
+
+        
+        Assert.assertEquals(userPermissionSet.size(),2);
+
+
 
 
 
