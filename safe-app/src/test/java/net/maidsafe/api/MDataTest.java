@@ -18,6 +18,7 @@ import net.maidsafe.safe_app.MDataInfo;
 import net.maidsafe.safe_app.MDataKey;
 import net.maidsafe.safe_app.MDataValue;
 import net.maidsafe.safe_app.PermissionSet;
+import net.maidsafe.safe_app.UserPermissionSet;
 import net.maidsafe.test.utils.Helper;
 import net.maidsafe.test.utils.SessionLoader;
 
@@ -211,4 +212,104 @@ public class MDataTest {
                 Constants.XOR_NAME_LENGTH).getBytes(), tagType, secretKey, nonce).get();
         privateMDataCrud(mDataInfo);
     }
+
+    @Test
+    public void mDataPermissionsTest() throws Exception {
+        //creating a session
+        Session session = TestHelper.createSession();
+        long tagType = TYPE_TAG;
+        EncryptKeyPair encryptKeyPair = session.crypto.generateEncryptKeyPair().get();
+        byte[] nonce = session.crypto.generateNonce().get();
+        byte[] secretKey = session.crypto.getRawSecretEncryptKey(encryptKeyPair.getSecretEncryptKey
+                ()).get();
+        // creating a mDatainfo
+        MDataInfo mDataInfo = session.mData.getPrivateMData(Helper.randomAlphaNumeric
+                (Constants.XOR_NAME_LENGTH).getBytes(),tagType,secretKey,nonce).get();
+
+        // creating a permission set
+        PermissionSet permissionSet = new PermissionSet();
+        permissionSet.setInsert(true);
+        permissionSet.setUpdate(true);
+        permissionSet.setRead(true);
+        permissionSet.setDelete(true);
+        permissionSet.setManagePermission(true);
+        NativeHandle permissionHandle = session.mDataPermission.newPermissionHandle().get();
+        NativeHandle appPublicSignKey = session.crypto.getAppPublicSignKey().get();
+
+        // inserting the permissionSet locally but not on the network.
+        session.mDataPermission.insert(permissionHandle,Constants.USER_ANYONE,permissionSet).get();
+
+        session.mDataPermission.insert(permissionHandle, appPublicSignKey,
+                permissionSet).get();
+
+        NativeHandle entriesHandle = session.mDataEntries.newEntriesHandle().get();
+        byte[] key = session.mData.encryptEntryKey(mDataInfo, "SAFERocks-key1".getBytes()).get();
+        byte[] value = session.mData.encryptEntryValue(mDataInfo, "SAFERocks-value2".getBytes()).get();
+
+        //inserting the entries handle
+        session.mDataEntries.insert(entriesHandle, key, value).get();
+
+        // inserting the mDatainfo,permission-handle,entries-handle
+        session.mData.put(mDataInfo, permissionHandle, entriesHandle).get();
+
+        PermissionSet newPermissionSet = new PermissionSet();
+        newPermissionSet.setInsert(true);
+        newPermissionSet.setUpdate(true);
+        newPermissionSet.setRead(true);
+        newPermissionSet.setDelete(false);
+        newPermissionSet.setManagePermission(true);
+
+        session.mData.setUserPermission(appPublicSignKey,mDataInfo,newPermissionSet,
+                session.mData.getVersion(mDataInfo).get()+1).get();
+
+        // inserting the permissionSet locally but not on the network.
+        //session.mDataPermission.insert(newpermissionHandle, appPublicSignKey,newPermissionSet).get();
+
+        // create a action handle to insert the second entry of the mData
+        NativeHandle actionHandle = session.mDataEntryAction.newEntryAction().get();
+//        key = session.mData.encryptEntryKey(mDataInfo, "SAFERocks-key2".getBytes()).get();
+//        value = session.mData.encryptEntryValue(mDataInfo, "someValue2".getBytes()).get();
+
+        // inserting 'locally'
+        //session.mDataEntryAction.insert(actionHandle, key, value).get();
+
+        // 'put'ing onto the network
+//        session.mData.mutateEntries(mDataInfo, newpermissionHandle).get();
+
+        permissionHandle = session.mData.getPermission(mDataInfo).get();
+        long noOfPermissions = session.mDataPermission.getLength(permissionHandle).get();
+
+        System.out.println(noOfPermissions);
+
+        PermissionSet checkPermissionSet = session.mDataPermission.getPermissionForUser(permissionHandle
+                ,appPublicSignKey).get();
+
+        System.out.println(checkPermissionSet.toString());
+
+//        PermissionSet truePermissionSet = new PermissionSet();
+//        truePermissionSet.setInsert(true);
+//        truePermissionSet.setUpdate(true);
+//        truePermissionSet.setRead(true);
+//        truePermissionSet.setDelete(false);
+//        truePermissionSet.setManagePermission(true);
+//
+//        PermissionSet falsePermissionSet = new PermissionSet();
+//        falsePermissionSet.setInsert(true);
+//        falsePermissionSet.setUpdate(true);
+//        falsePermissionSet.setRead(true);
+//        falsePermissionSet.setDelete(true);
+//        falsePermissionSet.setManagePermission(true);
+
+        Assert.assertEquals(checkPermissionSet.getRead(),true);
+        //Assert.assertNotEquals(checkPermissionSet,falsePermissionSet);
+
+
+
+        List<UserPermissionSet> userPermissionSet = session.mDataPermission.listAll(permissionHandle).get();
+
+
+
+
+    }
+
 }
