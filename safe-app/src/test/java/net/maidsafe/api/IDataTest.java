@@ -72,4 +72,29 @@ public class IDataTest {
 
         Assert.assertEquals(new String(data), new String(readData));
     }
+
+    @Test
+    public void serialisedSizeTest() throws Exception {
+        Session session = TestHelper.createSession();
+        byte[] data1 = Helper.randomAlphaNumeric(LENGTH).getBytes();
+        NativeHandle writerHandle = session.iData.getWriter().get();
+        session.iData.write(writerHandle, data1).get();
+        byte[] address = session.iData.close(writerHandle,
+                session.cipherOpt.getSymmetricCipherOpt().get()).get();
+        long size1 = session.iData.getSerialisedSize(address).get();
+        //System.out.println(size);
+
+        byte[] data2 = Helper.randomAlphaNumeric(LENGTH).getBytes();
+        NativeHandle publicEncryptKey = session.crypto.getAppPublicEncryptKey().get();
+        writerHandle = session.iData.getWriter().get();
+        session.iData.write(writerHandle, data2).get();
+        address = session.iData.close(writerHandle,
+                session.cipherOpt.getAsymmetricCipherOpt(publicEncryptKey).get()).get();
+        long size2 = session.iData.getSerialisedSize(address).get();
+
+        //System.out.println(size);
+
+        Assert.assertEquals(size1,size2);
+
+    }
 }

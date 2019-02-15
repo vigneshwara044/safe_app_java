@@ -11,6 +11,9 @@ package net.maidsafe.api;
 
 import net.maidsafe.api.model.NFSFileMetadata;
 import net.maidsafe.api.model.NativeHandle;
+import net.maidsafe.safe_app.AppExchangeInfo;
+import net.maidsafe.safe_app.AuthReq;
+import net.maidsafe.safe_app.ContainerPermissions;
 import net.maidsafe.safe_app.File;
 import net.maidsafe.safe_app.MDataInfo;
 import net.maidsafe.safe_app.PermissionSet;
@@ -19,6 +22,8 @@ import net.maidsafe.test.utils.SessionLoader;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.nio.ByteBuffer;
 
 public class NFSTest {
     static {
@@ -74,4 +79,6 @@ public class NFSTest {
         session.nfs.deleteFile(mDataInfo, "sample.txt",
                 fileMetadata.getVersion() + 1).get();
     }
+
+
 }

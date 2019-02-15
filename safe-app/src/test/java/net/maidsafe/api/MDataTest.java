@@ -50,7 +50,8 @@ public class MDataTest {
         session.mDataPermission.insert(permissionHandle, session.crypto.getAppPublicSignKey().get(),
                 permissionSet).get();
         NativeHandle entriesHandle = session.mDataEntries.newEntriesHandle().get();
-        session.mDataEntries.insert(entriesHandle, "someKey".getBytes(), "someValue".getBytes()).get();
+        session.mDataEntries.insert(entriesHandle, "someKey".getBytes(),
+                "someValue".getBytes()).get();
         session.mData.put(mDataInfo, permissionHandle, entriesHandle).get();
 
 
@@ -149,8 +150,10 @@ public class MDataTest {
         actionHandle = session.mDataEntryAction.newEntryAction().get();
         MDataEntry entry = entries.get(0);
         byte[] updatedValue = Helper.randomAlphaNumeric(LENGTH).getBytes();
-        byte[] encryptedUpdatedValue = session.mData.encryptEntryValue(mDataInfo, updatedValue).get();
-        session.mDataEntryAction.update(actionHandle, entry.getKey().getKey(), encryptedUpdatedValue,
+        byte[] encryptedUpdatedValue = session.mData.encryptEntryValue(mDataInfo,
+                updatedValue).get();
+        session.mDataEntryAction.update(actionHandle, entry.getKey().getKey(),
+                encryptedUpdatedValue,
                 entry.getValue().getEntryVersion() + 1).get();
         session.mData.mutateEntries(mDataInfo, actionHandle).get();
 
@@ -209,7 +212,8 @@ public class MDataTest {
         long tagType = TYPE_TAG;
         EncryptKeyPair encryptKeyPair = session.crypto.generateEncryptKeyPair().get();
         byte[] nonce = session.crypto.generateNonce().get();
-        byte[] secretKey = session.crypto.getRawSecretEncryptKey(encryptKeyPair.getSecretEncryptKey())
+        byte[] secretKey = session.crypto.getRawSecretEncryptKey(
+                encryptKeyPair.getSecretEncryptKey())
                 .get();
         MDataInfo mDataInfo = session.mData.getPrivateMData(Helper.randomAlphaNumeric(
                 Constants.XOR_NAME_LENGTH).getBytes(), tagType, secretKey, nonce).get();
@@ -247,7 +251,8 @@ public class MDataTest {
 
         NativeHandle entriesHandle = session.mDataEntries.newEntriesHandle().get();
         byte[] key = session.mData.encryptEntryKey(mDataInfo, "SAFERocks-key1".getBytes()).get();
-        byte[] value = session.mData.encryptEntryValue(mDataInfo, "SAFERocks-value2".getBytes()).get();
+        byte[] value = session.mData.encryptEntryValue(mDataInfo,
+                "SAFERocks-value2".getBytes()).get();
 
         //inserting the entries handle
         session.mDataEntries.insert(entriesHandle, key, value).get();
@@ -279,7 +284,8 @@ public class MDataTest {
         Assert.assertEquals(checkPermissionSet.getDelete(),false);
         Assert.assertEquals(checkPermissionSet.getManagePermission(),true);
 
-        List<UserPermissionSet> userPermissionSet = session.mDataPermission.listAll(permissionHandle).get();
+        List<UserPermissionSet> userPermissionSet = session.mDataPermission.listAll(
+                permissionHandle).get();
         Assert.assertEquals(userPermissionSet.size(),2);
     }
 
@@ -299,8 +305,10 @@ public class MDataTest {
 
         byte[] serializedMData = session.mData.serialise(mDataInfo).get();
 
-        session.mData.put(mDataInfo,Constants.MD_PERMISSION_EMPTY, Constants.MD_ENTRIES_EMPTY).get();
-        session.mData.put(mDataInfo1,Constants.MD_PERMISSION_EMPTY, Constants.MD_ENTRIES_EMPTY).get();
+        session.mData.put(mDataInfo,Constants.MD_PERMISSION_EMPTY,
+                Constants.MD_ENTRIES_EMPTY).get();
+        session.mData.put(mDataInfo1,Constants.MD_PERMISSION_EMPTY,
+                Constants.MD_ENTRIES_EMPTY).get();
 
         //MDataInfo newMDataInfo = session.mData.deserialise(serializedMData).get();
 
@@ -338,7 +346,8 @@ public class MDataTest {
 
         NativeHandle entriesHandle = session.mDataEntries.newEntriesHandle().get();
         byte[] key = session.mData.encryptEntryKey(mDataInfo, "SAFERocks-key1".getBytes()).get();
-        byte[] value = session.mData.encryptEntryValue(mDataInfo, "SAFERocks-value2".getBytes()).get();
+        byte[] value = session.mData.encryptEntryValue(mDataInfo, ("" +
+                "SAFERocks-value2").getBytes()).get();
 
         //inserting the entries handle
         session.mDataEntries.insert(entriesHandle, key, value).get();
@@ -349,7 +358,8 @@ public class MDataTest {
         // fetching the permissionHandle for the permissionSet
         NativeHandle checkPermissionHandle = session.mData.getPermission(mDataInfo).get();
 
-        PermissionSet checkPermissionSet = session.mDataPermission.getPermissionForUser(checkPermissionHandle,appPublicSignKey).get();
+        PermissionSet checkPermissionSet = session.mDataPermission.getPermissionForUser
+                (checkPermissionHandle,appPublicSignKey).get();
 
         Assert.assertEquals(checkPermissionSet.getRead(),true);
         Assert.assertEquals(checkPermissionSet.getInsert(),true);
@@ -367,7 +377,8 @@ public class MDataTest {
 
         checkPermissionHandle = session.mData.getPermission(mDataInfo).get();
 
-        checkPermissionSet = session.mDataPermission.getPermissionForUser(checkPermissionHandle,appPublicSignKey).get();
+        checkPermissionSet = session.mDataPermission.getPermissionForUser(
+                checkPermissionHandle,appPublicSignKey).get();
 
         Assert.assertEquals(checkPermissionSet.getManagePermission(),false);
         Assert.assertEquals(checkPermissionSet.getUpdate(),true);
@@ -385,7 +396,8 @@ public class MDataTest {
 
         NativeHandle entriesHandle = session.mDataEntries.newEntriesHandle().get();
         byte[] key = session.mData.encryptEntryKey(mDataInfo, "SAFERocks-key1".getBytes()).get();
-        byte[] value = session.mData.encryptEntryValue(mDataInfo, "SAFERocks-value2".getBytes()).get();
+        byte[] value = session.mData.encryptEntryValue(mDataInfo,
+                "SAFERocks-value2".getBytes()).get();
 
         //inserting the entries handle
         session.mDataEntries.insert(entriesHandle, key, value).get();
@@ -422,10 +434,12 @@ public class MDataTest {
         session.mDataPermission.insert(permissionHandle,appPublicSignKey,permissionSet);
 
         NativeHandle entriesHandle = session.mDataEntries.newEntriesHandle().get();
-        session.mDataEntries.insert(entriesHandle, "SAFEKey1".getBytes(), "SAFEValue1".getBytes()).get();
+        session.mDataEntries.insert(entriesHandle, "SAFEKey1".getBytes(),
+                "SAFEValue1".getBytes()).get();
         session.mData.put(mDataInfo,permissionHandle,entriesHandle);
 
-        session.mDataEntries.insert(entriesHandle, "SAFEKey2".getBytes(), "SAFEValue2".getBytes()).get();
+        session.mDataEntries.insert(entriesHandle, "SAFEKey2".getBytes(),
+                "SAFEValue2".getBytes()).get();
         session.mData.put(mDataInfo,permissionHandle,entriesHandle);
 
         List<MDataEntry> mDataEntryList = session.mDataEntries.listEntries(entriesHandle).get();
