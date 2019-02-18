@@ -5,3 +5,7 @@
 - Expose API provided by safe_client_libs v0.9.0
 - Setup test environment for unit tests and Android instrumentation tests
 - Android library implementation
+
+## Not released
+### Added
+- Added tests for mutable data

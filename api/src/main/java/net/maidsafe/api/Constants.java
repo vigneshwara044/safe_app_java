@@ -24,6 +24,7 @@ public final class Constants {
     public static final long SECRET_SIGN_KEY_SIZE = 64;
     public static final long PUBLIC_ENC_KEY_SIZE = 32;
     public static final long SECRET_ENC_KEY_SIZE = 32;
+    public static final String MD_METADATA_KEY = "_metadata";
 
     private Constants() {
         // Constructor intentionally empty
