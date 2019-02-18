@@ -57,23 +57,33 @@ public final class TestHelper {
         return createSession(locator, secret, authReq);
     }
 
-    public static Session createSession(final String locator,
-                                                          final String secret, final AuthReq authReq)
-            throws Exception {
+    public static Authenticator createAuthenticator() throws Exception {
+        String locator = Helper.randomAlphaNumeric(LENGTH);
+        String secret = Helper.randomAlphaNumeric(LENGTH);
         Authenticator authenticator = Authenticator.createAccount(locator, secret,
                 Helper.randomAlphaNumeric(LENGTH)).get();
+        return authenticator;
+    }
+    public static Session handleAuthReq(final Authenticator authenticator, final AuthReq authReq)
+            throws Exception {
         Request request = Session.encodeAuthReq(authReq).get();
         IpcRequest ipcRequest = authenticator.decodeIpcMessage(request.getUri()).get();
         Assert.assertThat(ipcRequest, IsInstanceOf.instanceOf(AuthIpcRequest.class));
         Assert.assertThat(ipcRequest, IsInstanceOf.instanceOf(AuthIpcRequest.class));
         AuthIpcRequest authIpcRequest = (AuthIpcRequest) ipcRequest;
-        String response = authenticator.encodeAuthResponse(authIpcRequest,
-                true).get();
+        String response = authenticator.encodeAuthResponse(authIpcRequest, true).get();
         DecodeResult decodeResult = Session.decodeIpcMessage(response).get();
         Assert.assertThat(decodeResult, CoreMatchers.instanceOf(AuthResponse.class));
         AuthResponse authResponse = (AuthResponse) decodeResult;
-        Assert.assertNotNull(authResponse);
         return Session.connect(authReq.getApp().getId(), authResponse.getAuthGranted()).get();
+    }
+
+    public static Session createSession(final String locator,
+                                        final String secret, final AuthReq authReq)
+            throws Exception {
+        Authenticator authenticator = Authenticator.createAccount(locator, secret,
+                                                Helper.randomAlphaNumeric(LENGTH)).get();
+        return handleAuthReq(authenticator, authReq);
     }
 
     public static Session createUnregisteredSession() throws Exception {
