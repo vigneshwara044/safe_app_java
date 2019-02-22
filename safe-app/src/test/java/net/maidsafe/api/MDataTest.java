@@ -12,6 +12,7 @@ package net.maidsafe.api;
 import java.util.List;
 
 import net.maidsafe.api.model.EncryptKeyPair;
+import net.maidsafe.api.model.IpcReqError;
 import net.maidsafe.api.model.IpcRequest;
 import net.maidsafe.api.model.NativeHandle;
 import net.maidsafe.api.model.Request;
@@ -307,7 +308,9 @@ public class MDataTest {
 
     @Test
     public void sharedMutableDataTest() throws Exception {
-        Session appA, appB;
+        MetadataResponse metadataResponse;
+        String keyString, valueString;
+        MDataInfo mDataInfo;
         Authenticator authenticator = TestHelper.createAuthenticator();
         ContainerPermissions[] permissions = new ContainerPermissions[1];
         permissions[0] = new ContainerPermissions("_public", new PermissionSet(true, true,
@@ -316,31 +319,36 @@ public class MDataTest {
         AuthReq authReq = new AuthReq(new AppExchangeInfo(APP_ID, "",
                     Helper.randomAlphaNumeric(LENGTH), Helper.randomAlphaNumeric(LENGTH)),
                     true, permissions, 1, 0);
-        appA = TestHelper.handleAuthReq(authenticator, authReq);
+        try {
+            Session appA = TestHelper.handleAuthReq(authenticator, authReq);
 
-        MDataInfo mDataInfo = new MDataInfo();
-        mDataInfo.setName(Helper.randomAlphaNumeric(Constants.XOR_NAME_LENGTH).getBytes());
-        mDataInfo.setTypeTag(TYPE_TAG);
+            mDataInfo = new MDataInfo();
+            mDataInfo.setName(Helper.randomAlphaNumeric(Constants.XOR_NAME_LENGTH).getBytes());
+            mDataInfo.setTypeTag(TYPE_TAG);
 
-        String keyString = Helper.randomAlphaNumeric(LENGTH);
-        String valueString = Helper.randomAlphaNumeric(LENGTH);
-        NativeHandle entriesHandle = appA.mDataEntries.newEntriesHandle().get();
-        byte[] key = appA.mData.encryptEntryKey(mDataInfo, keyString.getBytes()).get();
-        byte[] value = appA.mData.encryptEntryValue(mDataInfo, valueString.getBytes()).get();
-        appA.mDataEntries.insert(entriesHandle, key, value).get();
+            keyString = Helper.randomAlphaNumeric(LENGTH);
+            valueString = Helper.randomAlphaNumeric(LENGTH);
+            NativeHandle entriesHandle = appA.mDataEntries.newEntriesHandle().get();
+            byte[] key = appA.mData.encryptEntryKey(mDataInfo, keyString.getBytes()).get();
+            byte[] value = appA.mData.encryptEntryValue(mDataInfo, valueString.getBytes()).get();
+            appA.mDataEntries.insert(entriesHandle, key, value).get();
 
-        MetadataResponse metadataResponse = new MetadataResponse();
-        metadataResponse.setName("Test MData");
-        metadataResponse.setDescription("MData for testing");
-        metadataResponse.setXorName(mDataInfo.getName());
-        metadataResponse.setTypeTag(mDataInfo.getTypeTag());
-        byte[] encodedResponse = appA.mData.encodeMetadata(metadataResponse).get();
+            metadataResponse = new MetadataResponse();
+            metadataResponse.setName("Test MData");
+            metadataResponse.setDescription("MData for testing");
+            metadataResponse.setXorName(mDataInfo.getName());
+            metadataResponse.setTypeTag(mDataInfo.getTypeTag());
+            byte[] encodedResponse = appA.mData.encodeMetadata(metadataResponse).get();
 
-        appA.mDataEntries.insert(entriesHandle, Constants.MD_METADATA_KEY.getBytes(), encodedResponse).get();
-        appA.mData.put(mDataInfo, Constants.MD_PERMISSION_EMPTY, entriesHandle).get();
+            appA.mDataEntries.insert(entriesHandle, Constants.MD_METADATA_KEY.getBytes(), encodedResponse).get();
+            appA.mData.put(mDataInfo, Constants.MD_PERMISSION_EMPTY, entriesHandle).get();
+
+        } catch (Exception e) {
+            throw e;
+        }
 
         authReq.getApp().setId("net.maidsafe.app.two");
-        appB = TestHelper.handleAuthReq(authenticator, authReq);
+        Session appB = TestHelper.handleAuthReq(authenticator, authReq);
         Request shareMDataIpcRequest;
         AppExchangeInfo appExchangeInfo = new AppExchangeInfo("net.maidsafe.app.two",
                                                 "", "App two", "Maidsafe.net");
@@ -353,6 +361,10 @@ public class MDataTest {
         shareMDataIpcRequest =  Session.getShareMutableDataRequest(shareMDataReq).get();
 
         IpcRequest decodedReq = authenticator.decodeIpcMessage(shareMDataIpcRequest.getUri()).get();
+        if (decodedReq.getClass().equals(IpcReqError.class)) {
+            IpcReqError error = (IpcReqError) decodedReq;
+            throw new Exception(error.getMessage() + " \n " + error.getDescription());
+        }
         ShareMDataIpcRequest shareMDataIpcReq = (ShareMDataIpcRequest) decodedReq;
 
         Assert.assertEquals(shareMDataIpcReq.getMetadataResponse().length, 1);
