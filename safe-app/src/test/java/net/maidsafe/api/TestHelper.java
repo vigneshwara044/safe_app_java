@@ -10,10 +10,13 @@
 package net.maidsafe.api;
 
 import net.maidsafe.api.model.AuthIpcRequest;
+import net.maidsafe.api.model.ContainersIpcReq;
 import net.maidsafe.api.model.DecodeResult;
+import net.maidsafe.api.model.IpcReqError;
 import net.maidsafe.api.model.IpcRequest;
 import net.maidsafe.api.model.Request;
 import net.maidsafe.api.model.AuthResponse;
+import net.maidsafe.api.model.ShareMDataIpcRequest;
 import net.maidsafe.api.model.UnregisteredIpcRequest;
 import net.maidsafe.api.model.UnregisteredClientResponse;
 import net.maidsafe.safe_app.AppExchangeInfo;
@@ -86,5 +89,21 @@ public final class TestHelper {
         DecodeResult result = Session.decodeIpcMessage(response).get();
         Assert.assertThat(result, IsInstanceOf.instanceOf(UnregisteredClientResponse.class));
         return Session.connect((UnregisteredClientResponse) result).get();
+    }
+
+    public static String handleIpcRequest(final Authenticator authenticator, final String request)
+            throws Exception {
+        IpcRequest ipcRequest = authenticator.decodeIpcMessage(request).get();
+        if  (ipcRequest.getClass() == AuthIpcRequest.class) {
+            return authenticator.encodeAuthResponse((AuthIpcRequest) ipcRequest, true).get();
+        } else if (ipcRequest.getClass() == ContainersIpcReq.class) {
+            return authenticator.encodeContainersResponse((ContainersIpcReq) ipcRequest, true).get();
+        } else if (ipcRequest.getClass() == ShareMDataIpcRequest.class) {
+            return authenticator.encodeShareMDataResponse((ShareMDataIpcRequest) ipcRequest, true).get();
+        } else if (ipcRequest.getClass() == IpcReqError.class) {
+            IpcReqError ipcReqError = (IpcReqError) ipcRequest;
+            throw new Exception(ipcReqError.getMessage());
+        }
+        return null;
     }
 }
