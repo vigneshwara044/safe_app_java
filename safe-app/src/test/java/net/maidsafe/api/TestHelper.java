@@ -10,10 +10,13 @@
 package net.maidsafe.api;
 
 import net.maidsafe.api.model.AuthIpcRequest;
+import net.maidsafe.api.model.ContainersIpcReq;
 import net.maidsafe.api.model.DecodeResult;
+import net.maidsafe.api.model.IpcReqError;
 import net.maidsafe.api.model.IpcRequest;
 import net.maidsafe.api.model.Request;
 import net.maidsafe.api.model.AuthResponse;
+import net.maidsafe.api.model.ShareMDataIpcRequest;
 import net.maidsafe.api.model.UnregisteredIpcRequest;
 import net.maidsafe.api.model.UnregisteredClientResponse;
 import net.maidsafe.safe_app.AppExchangeInfo;
@@ -34,6 +37,7 @@ public final class TestHelper {
     }
     public static final String APP_ID = "net.maidsafe.java.test";
     public static final int LENGTH = 10;
+    public static final  String EMPTY_STRING = "";
 
     public static Session createSession() throws Exception {
         return createSession(APP_ID);
@@ -41,9 +45,9 @@ public final class TestHelper {
 
     public static Session createSession(final String appId) throws Exception {
         ContainerPermissions[] permissions = new ContainerPermissions[1];
-        permissions[0] = new ContainerPermissions("_public", new PermissionSet(true,
+        permissions[0] = new ContainerPermissions(DefaultContainers.PUBLIC, new PermissionSet(true,
                 true, false, false, false));
-        AuthReq authReq = new AuthReq(new AppExchangeInfo(appId, "",
+        AuthReq authReq = new AuthReq(new AppExchangeInfo(appId, EMPTY_STRING,
                 Helper.randomAlphaNumeric(LENGTH), Helper.randomAlphaNumeric(LENGTH)),
                 true, permissions, 1, 0);
         String locator = Helper.randomAlphaNumeric(LENGTH);
@@ -83,7 +87,11 @@ public final class TestHelper {
             throws Exception {
         Authenticator authenticator = Authenticator.createAccount(locator, secret,
                                                 Helper.randomAlphaNumeric(LENGTH)).get();
-        return handleAuthReq(authenticator, authReq);
+        Request request = Session.encodeAuthReq(authReq).get();
+        String encodedResponse = handleIpcRequest(authenticator, request.getUri());
+        DecodeResult decodeResult = Session.decodeIpcMessage(encodedResponse).get();
+        AuthResponse authResponse = (AuthResponse) decodeResult;
+        return Session.connect(authReq.getApp().getId(), authResponse.getAuthGranted()).get();
     }
 
     public static Session createUnregisteredSession() throws Exception {
@@ -96,5 +104,21 @@ public final class TestHelper {
         DecodeResult result = Session.decodeIpcMessage(response).get();
         Assert.assertThat(result, IsInstanceOf.instanceOf(UnregisteredClientResponse.class));
         return Session.connect((UnregisteredClientResponse) result).get();
+    }
+
+    public static String handleIpcRequest(final Authenticator authenticator, final String request)
+            throws Exception {
+        IpcRequest ipcRequest = authenticator.decodeIpcMessage(request).get();
+        if  (ipcRequest.getClass() == AuthIpcRequest.class) {
+            return authenticator.encodeAuthResponse((AuthIpcRequest) ipcRequest, true).get();
+        } else if (ipcRequest.getClass() == ContainersIpcReq.class) {
+            return authenticator.encodeContainersResponse((ContainersIpcReq) ipcRequest, true).get();
+        } else if (ipcRequest.getClass() == ShareMDataIpcRequest.class) {
+            return authenticator.encodeShareMDataResponse((ShareMDataIpcRequest) ipcRequest, true).get();
+        } else if (ipcRequest.getClass() == IpcReqError.class) {
+            IpcReqError ipcReqError = (IpcReqError) ipcRequest;
+            throw new Exception(ipcReqError.getMessage());
+        }
+        return null;
     }
 }

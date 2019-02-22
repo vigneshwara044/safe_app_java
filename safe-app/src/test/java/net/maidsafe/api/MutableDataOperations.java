@@ -11,6 +11,8 @@ package net.maidsafe.api;
 
 import java.util.List;
 
+import net.maidsafe.api.model.AuthResponse;
+import net.maidsafe.api.model.DecodeResult;
 import net.maidsafe.api.model.EncryptKeyPair;
 import net.maidsafe.api.model.IpcReqError;
 import net.maidsafe.api.model.IpcRequest;
@@ -44,6 +46,7 @@ public class MutableDataOperations {
     public static final String APP_ID = "net.maidsafe.java.test";
     static final int LENGTH = 10;
     static final int TYPE_TAG = 15001;
+    public static final String EMPTY_STRING = "";
 
     // Insert permissions, entries and 'put' the MD on the network.
     // Verify the inserted entries.
@@ -346,14 +349,18 @@ public class MutableDataOperations {
         MDataInfo mDataInfo;
         Authenticator authenticator = TestHelper.createAuthenticator();
         ContainerPermissions[] permissions = new ContainerPermissions[1];
-        permissions[0] = new ContainerPermissions("_public", new PermissionSet(true, true,
-                true, true, true));
+        permissions[0] = new ContainerPermissions(DefaultContainers.PUBLIC, new PermissionSet(true,
+                                                  true, true, true, true));
 
-        AuthReq authReq = new AuthReq(new AppExchangeInfo(APP_ID, "",
+        AuthReq authReq = new AuthReq(new AppExchangeInfo(APP_ID, EMPTY_STRING,
                     Helper.randomAlphaNumeric(LENGTH), Helper.randomAlphaNumeric(LENGTH)),
                     true, permissions, 1, 0);
         try {
-            Session appA = TestHelper.handleAuthReq(authenticator, authReq);
+            Request ipcMessage = Session.encodeAuthReq(authReq).get();
+            String encodedAuthResponse = TestHelper.handleIpcRequest(authenticator, ipcMessage.getUri());
+            DecodeResult decodeResult = Session.decodeIpcMessage(encodedAuthResponse).get();
+            AuthResponse authResponse = (AuthResponse) decodeResult;
+            Session appA = Session.connect(authReq.getApp().getId(), authResponse.getAuthGranted()).get();
 
             mDataInfo = new MDataInfo();
             mDataInfo.setName(Helper.randomAlphaNumeric(Constants.XOR_NAME_LENGTH).getBytes());
@@ -381,10 +388,15 @@ public class MutableDataOperations {
         }
 
         authReq.getApp().setId("net.maidsafe.app.two");
-        Session appB = TestHelper.handleAuthReq(authenticator, authReq);
+        Request ipcMessage = Session.encodeAuthReq(authReq).get();
+        String encodedAuthResponse = TestHelper.handleIpcRequest(authenticator, ipcMessage.getUri());
+        DecodeResult decodeResult = Session.decodeIpcMessage(encodedAuthResponse).get();
+        AuthResponse authResponse = (AuthResponse) decodeResult;
+        Session appB = Session.connect(authReq.getApp().getId(), authResponse.getAuthGranted()).get();
+
         Request shareMDataIpcRequest;
         AppExchangeInfo appExchangeInfo = new AppExchangeInfo("net.maidsafe.app.two",
-                                                "", "App two", "Maidsafe.net");
+                                                EMPTY_STRING, "App two", "Maidsafe.net");
         ShareMData[] shareMData = new ShareMData[1];
         shareMData[0] =  new ShareMData(mDataInfo.getTypeTag(),
                                 mDataInfo.getName(), new PermissionSet(true, true, true,

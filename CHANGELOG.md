@@ -9,3 +9,4 @@
 ## Not released
 ### Added
 - Added tests for mutable data
+- Added tests for Client

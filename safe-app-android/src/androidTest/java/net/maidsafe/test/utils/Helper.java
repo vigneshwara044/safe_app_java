@@ -9,6 +9,15 @@
 // of the SAFE Network Software.
 package net.maidsafe.test.utils;
 
+import android.support.test.InstrumentationRegistry;
+
+import net.maidsafe.api.Session;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public final class Helper {
 
@@ -16,6 +25,43 @@ public final class Helper {
 
     private Helper() {
         // Constructor intentionally empty
+    }
+    public static final int BYTE_SIZE = 1024;
+
+    public static File copyConfigFiles() throws Exception {
+        File generatedDir = InstrumentationRegistry.getTargetContext().getFilesDir();
+        copyFile("log.toml", generatedDir, null);
+        String appName = Session.getAppStem().get();
+        copyFile("safe_core.config", generatedDir, appName);
+        return generatedDir;
+    }
+
+    private static void copyFile(String fileName, File destinationDir, String appName) throws Exception {
+        InputStream inputStream = InstrumentationRegistry
+                                        .getContext()
+                                        .getAssets()
+                                        .open(fileName);
+        StringBuilder destFileName = new StringBuilder(fileName);
+        if (appName != null) {
+            destFileName.insert(0, appName + ".");
+        }
+        File destinationFile = new File(destinationDir, new String(destFileName));
+        if(destinationFile.exists()) {
+            destinationFile.delete();
+        }
+
+        copy(inputStream, destinationFile.getAbsoluteFile());
+    }
+    public static void copy(final InputStream inputStream, final File dst) throws Exception {
+        try (InputStream in = inputStream) {
+            try (OutputStream out = new FileOutputStream(dst)) {
+                byte[] buf = new byte[BYTE_SIZE];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
+        }
     }
 
     public static String randomAlphaNumeric(final int count) {
