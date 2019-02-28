@@ -8,7 +8,7 @@ safe_app_java is a Java wrapper for the [safe_app](https://github.com/maidsafe/s
 
 |Android|
 |:-:|
-|[![Build Status](https://travis-ci.org/maidsafe/safe_app_java.svg?branch=master)](https://travis-ci.org/maidsafe/safe_app_java)|
+|[![Build Status](https://travis-ci.com/maidsafe/safe_app_java.svg?branch=master)](https://travis-ci.com/maidsafe/safe_app_java)|
 
 
 ## API Documentation
