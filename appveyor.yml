@@ -6,7 +6,10 @@ clone_folder: "C:\\projects\\safe_app_java"
 init:
   - cd "C:\projects\safe_app_java"
   - git config --global core.autocrlf true
-build: off
-test_script:
+build_script:
   - gradlew.bat download-nativelibs
   - gradlew.bat check
+on_failure:
+  - 7z a reports.zip safe-app/build/reports/ lib/build/reports/ api/build/reports/
+  - cmd: appveyor PushArtifact reports.zip
+

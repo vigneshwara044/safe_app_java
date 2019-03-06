@@ -21,9 +21,20 @@ subprojects {
         ruleSets = ["$rootDir/config/pmd/pmd-ruleset.xml"]
     }
 
+    tasks.withType(Pmd) {
+        reports {
+            xml.enabled false
+            html.enabled true
+        }
+    }
+
     tasks.withType(Checkstyle) {
         exclude "**/net/maidsafe/safe_app/*"
         exclude "**/net/maidsafe/safe_authenticator/*"
+        reports {
+            html.enabled = true
+            xml.enabled = false
+        }
     }
 }
 task delete(type: Delete) {
