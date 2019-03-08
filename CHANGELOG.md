@@ -10,3 +10,6 @@
 ### Added
 - Added tests for mutable data
 - Added tests for Client
+
+### Removed
+- Removed getSerialisedSize API from immutable data

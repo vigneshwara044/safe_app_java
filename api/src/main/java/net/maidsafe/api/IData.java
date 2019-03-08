@@ -145,8 +145,9 @@ public class IData {
      * Get size of the serialised Immutable Data
      * @param address Address of the Immutable Data
      * @return Size of the serialised Immutable Data
+     * @deprecated This method will be removed
      */
-    public CompletableFuture<Long> getSerialisedSize(final byte[] address) {
+    @Deprecated public CompletableFuture<Long> getSerialisedSize(final byte[] address) {
         final CompletableFuture<Long> future = new CompletableFuture<>();
         NativeBindings.idataSerialisedSize(appHandle.toLong(), address, (result, size) -> {
             if (result.getErrorCode() != 0) {
